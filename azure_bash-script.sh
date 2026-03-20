@@ -104,6 +104,7 @@ az vm create \
  --size Standard_B1s \
  --vnet-name $vnet_name \
  --subnet $subnet2_name \
+ --public-ip-address '' \
  --admin-username $username \
  --generate-ssh-keys
 
@@ -117,6 +118,7 @@ az vm create \
  --size Standard_B1s \
  --vnet-name $vnet_name \
  --subnet $subnet3_name \
+ --public-ip-address '' \
  --admin-username $username \
  --generate-ssh-keys
 
@@ -176,6 +178,7 @@ az vm create \
  --priority 110 \
  --access allow \
  --direction Inbound \
+ --source-address-prefixes 10.0.1.0/24 \
  --destination-port-ranges 22 \
  --protocol Tcp
 
@@ -186,11 +189,12 @@ az vm create \
  --priority 120 \
  --access allow \
  --direction Inbound \
+ --source-address-prefixes 10.0.2.0/24 \
  --destination-port-ranges 22 \
  --protocol Tcp
  
 # ============================================================
-# NSG RULE: ALLOW HTTP (WEB TIER — PORT 80/443)
+# NSG RULE: ALLOW HTTP (WEB TIER — PORT 80)
 # ============================================================
  az network nsg rule create \
  --resource-group $Resource \
@@ -199,7 +203,7 @@ az vm create \
  --priority 130 \
  --access Allow \
  --direction Inbound \
- --destination-port-ranges 80 443 \
+ --destination-port-ranges 80 \
  --protocol Tcp
 
 # ============================================================
@@ -235,17 +239,6 @@ az network nsg rule create \
 # ============================================================
 # NSG RULE: DENY WEB → DB (BLOCK DIRECT ACCESS)
 # ============================================================
- az network nsg rule create \
- --resource-group $Resource \
- --nsg-name $subnet1_name \
- --name DenyWebToDB \
- --priority 160 \
- --access Deny \
- --direction Outbound \
- --protocol Icmp \
- --source-address-prefixes 10.0.1.0/24 \
- --destination-address-prefixes 10.0.3.0/24 
-
   az network nsg rule create \
  --resource-group $Resource \
  --nsg-name $subnet1_name \
@@ -255,19 +248,9 @@ az network nsg rule create \
  --direction Inbound \
  --protocol Icmp \
  --source-address-prefixes 10.0.3.0/24 \
- --destination-address-prefixes 10.0.1.0/24
-
-
-  az network nsg rule create \
- --resource-group $Resource \
- --nsg-name $subnet3_name \
- --name DenyDBTOWeb \
- --priority 180 \
- --access Deny \
- --direction Outbound \
- --protocol Icmp \
- --source-address-prefixes 10.0.3.0/24 \
- --destination-address-prefixes 10.0.1.0/24
+  --source-port-ranges '*' \
+ --destination-address-prefixes 10.0.1.0/24\
+  --destination-port-ranges '*' 
 
  az network nsg rule create \
  --resource-group $Resource \
@@ -278,7 +261,9 @@ az network nsg rule create \
  --direction Inbound \
  --protocol Icmp \
  --source-address-prefixes 10.0.1.0/24 \
- --destination-address-prefixes 10.0.3.0/24 
+ --source-port-ranges '*' \
+ --destination-address-prefixes 10.0.3.0/24 \
+  --destination-port-ranges '*' 
 
 # ============================================================
 # NSG RULE: ALLOW ICMP WEB ↔ APP ↔ DB (PING TESTS)
@@ -292,7 +277,9 @@ az network nsg rule create \
  --direction Inbound \
  --protocol Icmp \
  --source-address-prefixes 10.0.1.0/24 \
- --destination-address-prefixes 10.0.2.0/24 
+  --source-port-ranges '*' \
+ --destination-address-prefixes 10.0.2.0/24 \
+ --destination-port-ranges '*'
 
 
   az network nsg rule create \
@@ -304,7 +291,9 @@ az network nsg rule create \
  --direction Inbound \
  --protocol Icmp \
  --source-address-prefixes 10.0.3.0/24 \
- --destination-address-prefixes 10.0.2.0/24 
+  --source-port-ranges '*' \
+ --destination-address-prefixes 10.0.2.0/24 \
+ --destination-port-ranges '*'
 
 # ============================================================
 # ASSOCIATE NSGs WITH SUBNETS
