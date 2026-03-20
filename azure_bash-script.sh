@@ -92,7 +92,7 @@ az vm create \
  --subnet $subnet1_name \
  --public-ip-address WebVM-pip \
  --admin-username $username \
- --generate-ssh-keys
+ --ssh-key-values @~/.ssh/id_rsa.pub
 
 # ============================================================
 # PROVISION LINUX VM — APP SUBNET
@@ -106,7 +106,7 @@ az vm create \
  --subnet $subnet2_name \
  --public-ip-address '' \
  --admin-username $username \
- --generate-ssh-keys
+ --ssh-key-values @~/.ssh/id_rsa.pub
 
 # ============================================================
 # PROVISION LINUX VM — DB SUBNET
@@ -120,7 +120,7 @@ az vm create \
  --subnet $subnet3_name \
  --public-ip-address '' \
  --admin-username $username \
- --generate-ssh-keys
+ --ssh-key-values @~/.ssh/id_rsa.pub
 
 # ============================================================
 # OPEN PORT 22 FOR SSH TESTING (ALL VMs)
